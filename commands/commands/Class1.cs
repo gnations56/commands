@@ -197,8 +197,8 @@ namespace connections
             con.Close();
         }
     }
-   
-   
+
+
     namespace nesockets
     {
         public static class endpoints
@@ -220,6 +220,11 @@ namespace connections
                 IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 11000);
                 return ipEndPoint;
             }
+        }
+
+        public static partial class serversockets
+        {
+
 
             public static Socket initSocket()
             {
@@ -227,11 +232,16 @@ namespace connections
                 return client;
             }
 
-            public static void connectSocket(Socket client,IPAddress ipAddr, int port)
+            
+
+           
+        }
+        public static partial class clientsockets
+        {
+            public static void connectClient(Socket client, IPAddress ipAddr, int port)
             {
-                client.Connect(ipAddr,port);
+                client.Connect(ipAddr, port);
             }
         }
-
     }
 }
