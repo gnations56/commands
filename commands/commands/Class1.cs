@@ -198,10 +198,40 @@ namespace connections
         }
     }
    
-    public static partial class endpoints
+   
+    namespace nesockets
     {
+        public static class endpoints
+        {
+            public static IPHostEntry getHostEntry()
+            {
+                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
+                return ipHost;
+            }
 
+            public static IPAddress getAddressList(IPHostEntry ipHost)
+            {
+                IPAddress ipAddr = ipHost.AddressList[0];
+                return ipAddr;
+            }
 
+            public static IPEndPoint initEndpoint(IPAddress ipAddr)
+            {
+                IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 11000);
+                return ipEndPoint;
+            }
+
+            public static Socket initSocket()
+            {
+                Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                return client;
+            }
+
+            public static void connectSocket(Socket client,IPAddress ipAddr, int port)
+            {
+                client.Connect(ipAddr,port);
+            }
+        }
 
     }
 }
