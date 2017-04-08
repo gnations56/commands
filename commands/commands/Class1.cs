@@ -8,8 +8,6 @@ using System.Net.Sockets;
 
 namespace commands
 {
-    public static class commands
-    {
         public static partial class servercom
         {
 
@@ -23,7 +21,7 @@ namespace commands
         }
 
 
-   }
+   
 
     
 }
