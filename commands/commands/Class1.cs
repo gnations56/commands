@@ -9,15 +9,15 @@ using System.Net;
 using System.IO.Compression;
 namespace commands
 {
-        public static partial class servercom
-        {
-
-
-        }
 
         public static partial class clientcom
         {
+ public static void addPackage()
+        {
+            Console.WriteLine("Enter the folder to add:");
+            
 
+        }
 
         }
 
