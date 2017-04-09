@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
-
+using System.IO.Compression;
 namespace commands
 {
         public static partial class servercom
@@ -70,7 +70,18 @@ namespace packages
             return registeredPackages;
         }
 
-       
+       public static string createPackageFromDir(string path, string zipname)
+        {
+            string dirpath = path;
+            string zippath = path + "\\" + zipname;
+            ZipFile.CreateFromDirectory(dirpath, zippath);
+            return zippath;
+        }
+
+        public static void extractPackage(string zippath, string path)
+        {
+            ZipFile.ExtractToDirectory(zippath, path);
+        }
             }
         }
 
@@ -199,49 +210,56 @@ namespace connections
     }
 
 
-    namespace nesockets
+}
+namespace nesockets
+{
+    public static class endpoints
     {
-        public static class endpoints
+        public static IPHostEntry getHostEntry()
         {
-            public static IPHostEntry getHostEntry()
-            {
-                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                return ipHost;
-            }
-
-            public static IPAddress getAddressList(IPHostEntry ipHost)
-            {
-                IPAddress ipAddr = ipHost.AddressList[0];
-                return ipAddr;
-            }
-
-            public static IPEndPoint initEndpoint(IPAddress ipAddr)
-            {
-                IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 11000);
-                return ipEndPoint;
-            }
+            IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
+            return ipHost;
         }
 
-        public static partial class serversockets
+        public static IPAddress getAddressList(IPHostEntry ipHost)
         {
-
-
-            public static Socket initSocket()
-            {
-                Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                return client;
-            }
-
-            
-
-           
+            IPAddress ipAddr = ipHost.AddressList[0];
+            return ipAddr;
         }
-        public static partial class clientsockets
+
+        public static IPEndPoint initEndpoint(IPAddress ipAddr)
         {
-            public static void connectClient(Socket client, IPAddress ipAddr, int port)
-            {
-                client.Connect(ipAddr, port);
-            }
+            IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 11000);
+            return ipEndPoint;
+        }
+    }
+
+    public static partial class serversockets
+    {
+
+
+        public static Socket initSocket()
+        {
+            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            return client;
+        }
+
+
+
+
+    }
+    public static partial class clientsockets
+    {
+        public static void connectClient(Socket client, IPAddress ipAddr, int port)
+        {
+            client.Connect(ipAddr, port);
+        }
+
+        public static void closeSockets(Socket client)
+        {
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
         }
     }
 }
+
