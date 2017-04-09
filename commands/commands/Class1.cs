@@ -70,7 +70,7 @@ namespace packages
             return registeredPackages;
         }
 
-       public static string createPackageFromDir(string path, string zipname)
+        public static string createZipPackageFromDir(string path, string zipname)
         {
             string dirpath = path;
             string zippath = path + "\\" + zipname;
@@ -78,11 +78,57 @@ namespace packages
             return zippath;
         }
 
-        public static void extractPackage(string zippath, string path)
+        public static void extractZipPackage(string zippath, string path)
         {
             ZipFile.ExtractToDirectory(zippath, path);
         }
+
+        public static void createTarGzPackageFromDir(DirectoryInfo dirselect, string path)
+        {
+            foreach (FileInfo fileToCompress in dirselect.GetFiles())
+            {
+                using (FileStream originalFileStream = fileToCompress.OpenRead())
+                {
+                    if ((File.GetAttributes(fileToCompress.FullName) &
+                       FileAttributes.Hidden) != FileAttributes.Hidden & fileToCompress.Extension != ".gz")
+                    {
+                        using (FileStream compressedFileStream = File.Create(fileToCompress.FullName + ".gz"))
+                        {
+                            using (GZipStream compressionStream = new GZipStream(compressedFileStream,
+                               CompressionMode.Compress))
+                            {
+                                originalFileStream.CopyTo(compressionStream);
+
+                            }
+                        }
+                        FileInfo info = new FileInfo(path + "\\" + fileToCompress.Name + ".gz");
+                        Console.WriteLine("Compressed {0} from {1} to {2} bytes.",
+                        fileToCompress.Name, fileToCompress.Length.ToString(), info.Length.ToString());
+                    }
+
+                }
             }
+
+        }
+
+        public static void extractTarGzPackage(FileInfo filesinpackage)
+            {
+            using (FileStream originalFileStream = filesinpackage.OpenRead())
+            {
+                string currentFileName = filesinpackage.FullName;
+                string newFileName = currentFileName.Remove(currentFileName.Length - filesinpackage.Extension.Length);
+
+                using (FileStream decompressedFileStream = File.Create(newFileName))
+                {
+                    using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                    {
+                        decompressionStream.CopyTo(decompressedFileStream);
+                        Console.WriteLine("Decompressed: {0}", filesinpackage.Name);
+                    }
+                }
+            }
+        }
+}
         }
 
 
