@@ -8,6 +8,10 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO.Compression;
 using System.Windows.Forms;
+using System.Net.Security;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+
 namespace commands
 {
 
@@ -156,20 +160,20 @@ namespace connections
 {
     public static partial class server
     {
-        public static NetworkStream getNetStream(TcpClient client)
+        public static NetworkStream GetNetStream(TcpClient client)
         {
             NetworkStream stream = client.GetStream();
             return stream;
 
         }
-        public static IPAddress parseip(string ip)
+        public static IPAddress ParseIp(string ip)
         {
             IPAddress localAddr = IPAddress.Parse(ip);
             return localAddr;
 
         }
 
-        public static TcpListener initServer(IPAddress ip, int port)
+        public static TcpListener InitServer(IPAddress ip, int port)
         {
             try
             {
@@ -186,7 +190,7 @@ namespace connections
 
         }
 
-        public static TcpClient acceptConnection(TcpListener server)
+        public static TcpClient AcceptConnection(TcpListener server)
         {
             server.Start();
             TcpClient client = server.AcceptTcpClient();
@@ -194,7 +198,7 @@ namespace connections
             return client;
         }
 
-        public static string recieveMessage(NetworkStream stream)
+        public static string RecieveMessage(NetworkStream stream)
         {
             Byte[] bytes = new Byte[256];
             String data = null;
@@ -217,26 +221,26 @@ namespace connections
             }
             return data;
         }
-        public static Byte[] processData(string data)
+        public static Byte[] ProcessData(string data)
         {
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
             return msg;
 
         }
-        public static void returnResponse(Byte[] msg, string data, NetworkStream stream)
+        public static void ReturnResponse(Byte[] msg, string data, NetworkStream stream)
         {
             stream.Write(msg, 0, msg.Length);
             Console.WriteLine("Sent: {0}", data);
         }
 
-        public static void closeConnection(TcpClient client)
+        public static void CloseConnection(TcpClient client)
         {
             client.Close();
         }
     }
     public static partial class client
     {
-        public static TcpClient connect(string ip, int port)
+        public static TcpClient Connect(string ip, int port)
         {
             TcpClient con;
             try
@@ -251,7 +255,7 @@ namespace connections
             }
         }
 
-        public static Byte[] sendPacket(string message, NetworkStream stream)
+        public static Byte[] SendPacket(string message, NetworkStream stream)
         {
             Byte[] data = System.Text.ASCIIEncoding.ASCII.GetBytes(message);
             stream.Write(data, 0, data.Length);
@@ -259,7 +263,7 @@ namespace connections
             return data;
         }
 
-        public static void getResponse(NetworkStream stream, Byte[] data)
+        public static void GetResponse(NetworkStream stream, Byte[] data)
         {
             Byte[] newdata = new Byte[256];
             Int32 bytes = stream.Read(newdata, 0, data.Length);
@@ -268,13 +272,65 @@ namespace connections
             Console.WriteLine("Received: {0}", responseData);
         }
 
-        public static void closeConnections(TcpClient con, NetworkStream stream)
+        public static void CloseConnections(TcpClient con, NetworkStream stream)
         {
             stream.Close();
             con.Close();
         }
+       
     }
+public class SSL
+    {
+        public static X509Certificate CertFromFile(string certfile)
+        {
+            X509Certificate serverCertificate = X509Certificate.CreateFromCertFile(certfile);
+            return serverCertificate;
+        }
 
+        static void ProcessClient(TcpClient client, X509Certificate serverCertificate)
+        {
+            SslStream sslStream = new SslStream(client.GetStream(), false);
+            try
+            {
+                sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
+            
+            }
+
+            catch (AuthenticationException aex)
+            {
+
+
+            }
+        }
+
+        static string ReadMessage(SslStream sslStream)
+        {
+            byte[] buffer = new byte[2048];
+            StringBuilder messageData = new StringBuilder();
+            int bytes = -1;
+            do
+            {
+                // Read the client's test message.
+                bytes = sslStream.Read(buffer, 0, buffer.Length);
+
+                // Use Decoder class to convert from bytes to UTF8
+                // in case a character spans two buffers.
+                Decoder decoder = Encoding.UTF8.GetDecoder();
+                char[] chars = new char[decoder.GetCharCount(buffer, 0, bytes)];
+                decoder.GetChars(buffer, 0, bytes, chars, 0);
+                messageData.Append(chars);
+                // Check for EOF or an empty message.
+                if (messageData.ToString().IndexOf("<EOF>") != -1)
+                {
+                    break;
+                }
+            } while (bytes != 0);
+
+            return messageData.ToString();
+
+        }
+
+    }
 
 }
 namespace nesockets
