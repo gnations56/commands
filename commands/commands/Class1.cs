@@ -7,18 +7,38 @@ using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using System.IO.Compression;
+using System.Windows.Forms;
 namespace commands
 {
 
         public static partial class clientcom
         {
- public static void addPackage()
+ public static void addPackage(string path, string zipname)
         {
-            Console.WriteLine("Enter the folder to add:");
             
+            string zippath = String.Empty;
+            try
+            {
+                zippath = packages.packages.createZipPackageFromDir(path, zipname);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An Error Occured" + ex.Message);
+            }
 
         }
 
+        public static void openPackage(string zippath, string extractpath)
+        {
+            try
+            {
+                packages.packages.extractZipPackage(zippath, extractpath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An Error Occured" + ex.Message);
+            }
+        }
         }
 
 
@@ -73,8 +93,8 @@ namespace packages
         public static string createZipPackageFromDir(string path, string zipname)
         {
             string dirpath = path;
-            string zippath = path + "\\" + zipname;
-            ZipFile.CreateFromDirectory(dirpath, zippath);
+            string zippath = Application.StartupPath + zipname;
+            ZipFile.CreateFromDirectory(dirpath, zippath,CompressionLevel.Optimal,true);
             return zippath;
         }
 
@@ -192,7 +212,7 @@ namespace connections
             }
             catch (Exception ex)
             {
-                Console.WriteLine("The Connection was closed");
+                Console.WriteLine(ex.Message);
                 data = null;
             }
             return data;
